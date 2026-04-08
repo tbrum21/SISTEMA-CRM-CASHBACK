@@ -1,0 +1,33 @@
+# NPM Dependencies
+node_modules
+apps/web/node_modules/
+apps/api/node_modules/
+packages/database/node_modules/
+
+# Next.js Build
+.next
+out
+build
+
+# Env Security (Never commit passwords)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Baileys WhatsApp Session Tokens (Contains private chat credentials)
+baileys_auth_info/
+apps/api/baileys_auth_info/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Typescript caches
+*.tsbuildinfo
+
+# OS System Files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased font-sans text-slate-900 bg-slate-50 dark:text-zinc-100 dark:bg-[#060608] overflow-x-hidden min-h-screen relative transition-colors duration-500;
+  }
+}
+
+/* Background Soft Pastel Mesh Gradient inspirado na Salesforce */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: 
+    radial-gradient(at 0% 10%, rgba(210, 235, 255, 0.95) 0px, transparent 60%),
+    radial-gradient(at 100% 100%, rgba(235, 250, 210, 0.9) 0px, transparent 70%),
+    radial-gradient(at 80% 0%, rgba(220, 245, 230, 0.6) 0px, transparent 60%),
+    radial-gradient(at 20% 90%, rgba(225, 230, 255, 0.8) 0px, transparent 50%);
+  background-color: #f6f8fb;
+  z-index: -1;
+  transition: all 0.5s ease;
+}
+
+html.dark body::before {
+  background: 
+    radial-gradient(at 0% 10%, rgba(37, 99, 235, 0.08) 0px, transparent 60%),
+    radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.04) 0px, transparent 70%),
+    radial-gradient(at 80% 0%, rgba(0, 0, 0, 0) 0px, transparent 60%),
+    radial-gradient(at 20% 90%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+  background-color: #060608;
+}
+
+/* Hide scrollbar for ultra-clean UI */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.1);
+}

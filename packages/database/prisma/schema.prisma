@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                  String            @id @default(uuid())
+  slug                String            @unique
+  name                String
+  document            String?           // CNPJ
+  
+  cashbackTtlDays     Int?              @default(90)
+  remarketingTemplate String?           
+  birthdayTemplate    String?           
+  
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  users               User[]
+  customerProfiles    CustomerProfile[]
+  transactions        Transaction[]
+  rewardRules         RewardRule[]
+  products            Product[]
+}
+
+model User {
+  id            String   @id @default(uuid())
+  tenantId      String?
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id])
+  
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          String   @default("MERCHANT")
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Customer {
+  id            String            @id @default(uuid())
+  phone         String            @unique
+  cpf           String?           @unique
+  name          String?
+  birthDate     DateTime?
+  
+  profiles      CustomerProfile[]
+  
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model CustomerProfile {
+  id                    String        @id @default(uuid())
+  tenantId              String
+  tenant                Tenant        @relation(fields: [tenantId], references: [id])
+  
+  customerId            String
+  customer              Customer      @relation(fields: [customerId], references: [id])
+
+  balance               Float         @default(0)
+  lifetimeValue         Float         @default(0)
+  totalTransactions     Int           @default(0)
+  
+  lastPurchaseAt        DateTime?     
+  lastRemarketingSentAt DateTime?     
+  lastBirthdaySentYear  Int?          
+  rfmSegment            String?       
+  
+  transactions          Transaction[]
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@unique([tenantId, customerId])    
+}
+
+model Transaction {
+  id                String          @id @default(uuid())
+  tenantId          String
+  tenant            Tenant          @relation(fields: [tenantId], references: [id])
+  
+  customerProfileId String
+  customerProfile   CustomerProfile @relation(fields: [customerProfileId], references: [id])
+  
+  type              String          // EARN | REDEEM | EXPIRE
+  
+  amountPurchase    Float?          
+  amountPoints      Float           
+  description       String?         
+  
+  expiresAt         DateTime?       
+  isExpired         Boolean         @default(false)
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+}
+
+model RewardRule {
+  id            String   @id @default(uuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  
+  name          String
+  description   String?
+  type          String   
+  value         Float    
+  
+  dayOfWeek     Int?     
+  minPurchase   Float?   
+  
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Product {
+  id            String   @id @default(uuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id])
+  
+  name          String
+  description   String?
+  imageUrl      String?
+  costInPoints  Float    
+  isActive      Boolean  @default(true)
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
