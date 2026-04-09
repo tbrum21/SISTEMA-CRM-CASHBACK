@@ -72,6 +72,7 @@ model CustomerProfile {
   rfmSegment            String?       
   
   transactions          Transaction[]
+  notes                 CustomerNote[]
 
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
@@ -132,4 +133,16 @@ model Product {
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+}
+
+model CustomerNote {
+  id                String          @id @default(uuid())
+  customerProfileId String
+  customerProfile   CustomerProfile @relation(fields: [customerProfileId], references: [id], onDelete: Cascade)
+  
+  content           String
+  authorName        String          @default("Admin")
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
 }

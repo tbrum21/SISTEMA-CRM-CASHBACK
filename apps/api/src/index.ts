@@ -5,6 +5,7 @@ import { DashboardController } from './controllers/dashboard.controller';
 import { TransactionController } from './controllers/transaction.controller';
 import { SettingsController } from './controllers/settings.controller';
 import { POSController } from './controllers/pos.controller';
+import { CustomerController } from './controllers/customer.controller';
 import { CRMWorkers } from './workers/cron.worker';
 import { prisma } from '@repo/database';
 
@@ -36,6 +37,14 @@ app.delete('/api/settings/:tenantSlug/rules/:id', SettingsController.deleteRule)
 app.get('/api/pos/:tenantSlug/customer', POSController.lookupCustomer);
 app.get('/api/pos/:tenantSlug/rules', POSController.getActiveRules);
 app.post('/api/pos/:tenantSlug/purchase', POSController.registerPurchase);
+
+// Diretório de Clientes & CRM
+app.get('/api/customers/:tenantSlug', CustomerController.listCustomers);
+app.get('/api/customers/:tenantSlug/:profileId', CustomerController.getCustomerDetail);
+app.post('/api/customers/:tenantSlug/:profileId/notes', CustomerController.addNote);
+app.delete('/api/customers/:tenantSlug/notes/:noteId', CustomerController.deleteNote);
+app.post('/api/customers/:tenantSlug/message-segment', CustomerController.sendSegmentMessage);
+
 
 // Inicializa Backgroun Tasks de Engajamento
 async function bootstrap() {
