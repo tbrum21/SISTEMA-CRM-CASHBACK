@@ -1,4 +1,3 @@
-import makeWASocket, { useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import path from 'path';
 
@@ -6,6 +5,10 @@ export class WhatsAppService {
   private sock: any;
 
   async initEngine() {
+    const baileys = await new Function('return import("@whiskeysockets/baileys")')();
+    const makeWASocket = baileys.default?.default || baileys.default || baileys.makeWASocket;
+    const { useMultiFileAuthState, DisconnectReason } = baileys;
+
     const { state, saveCreds } = await useMultiFileAuthState(path.resolve(__dirname, '..', '..', 'sessions'));
 
     this.sock = makeWASocket({

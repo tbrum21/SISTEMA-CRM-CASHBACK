@@ -19,6 +19,8 @@ export class TransactionService {
 
     const pointsEarned = rule.type === 'PERCENTAGE' 
       ? (purchaseAmount * rule.value) / 100 
+      : rule.type === 'CONVERSION'
+      ? Math.floor(purchaseAmount / rule.value)
       : rule.value;
 
     return await this.prisma.$transaction(async (tx) => {

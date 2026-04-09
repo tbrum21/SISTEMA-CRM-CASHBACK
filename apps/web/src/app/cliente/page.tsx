@@ -1,5 +1,5 @@
 'use client';
-import { Wallet, QrCode, ArrowUpRight, History, Star } from 'lucide-react';
+import { Wallet, Star, ArrowUpRight } from 'lucide-react';
 
 export default function ClientePWA() {
   return (
@@ -24,18 +24,7 @@ export default function ClientePWA() {
           </div>
         </div>
 
-        <div className="flex gap-4 px-6 -mt-7 relative z-10">
-          <button className="flex-1 bg-zinc-900 border border-zinc-800 text-white rounded-[1.5rem] p-5 shadow-2xl flex flex-col items-center gap-3 hover:bg-zinc-800 transition">
-            <div className="bg-indigo-500 p-3 rounded-full text-white shadow-lg"><QrCode size={24} /></div>
-            <span className="text-xs font-bold tracking-widest uppercase">Resgatar</span>
-          </button>
-          <button className="flex-1 bg-zinc-900 border border-zinc-800 text-white rounded-[1.5rem] p-5 shadow-2xl flex flex-col items-center gap-3 hover:bg-zinc-800 transition">
-            <div className="bg-zinc-800 p-3 rounded-full text-zinc-300"><History size={24} /></div>
-            <span className="text-xs font-bold tracking-widest uppercase text-zinc-400">Extrato</span>
-          </button>
-        </div>
-
-        <div className="px-6 mt-10">
+        <div className="px-6 mt-8">
           <h3 className="text-zinc-100 font-bold text-lg mb-5 tracking-tight">Onde usar</h3>
           <div className="bg-zinc-900/60 border border-zinc-800 rounded-3xl p-4 flex items-center justify-between mb-4 hover:bg-zinc-800 transition">
              <div className="flex items-center gap-4">
