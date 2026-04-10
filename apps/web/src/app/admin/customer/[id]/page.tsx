@@ -111,9 +111,9 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
              </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex flex-col gap-8">
               {/* Gráfico Recharts */}
-              <div className="bg-white/40 dark:bg-[#0a0a0c]/40 backdrop-blur-2xl border border-white/60 dark:border-white/5 p-6 rounded-[2.5rem] shadow-sm">
+              <div className="bg-white/40 dark:bg-[#0a0a0c]/40 backdrop-blur-2xl border border-white/60 dark:border-white/5 p-6 rounded-[2.5rem] shadow-sm w-full">
                   <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 px-2">Consumo 6 Meses</h3>
                   <div className="w-full h-[220px]">
                       <ResponsiveContainer width="100%" height="100%">
@@ -140,31 +140,33 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
                   </div>
               </div>
 
-              {/* Timeline Horizontal / Lista */}
-              <div className="bg-white/40 dark:bg-[#0a0a0c]/40 backdrop-blur-2xl border border-white/60 dark:border-white/5 p-6 rounded-[2.5rem] shadow-sm h-[320px] overflow-y-auto no-scrollbar">
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 sticky top-0 bg-white/10 dark:bg-black/10 backdrop-blur-md px-2 py-1 rounded-lg">Linha do Tempo</h3>
+              {/* Timeline Horizontal */}
+              <div className="bg-white/40 dark:bg-[#0a0a0c]/40 backdrop-blur-2xl border border-white/60 dark:border-white/5 p-6 rounded-[2.5rem] shadow-sm w-full overflow-x-auto no-scrollbar">
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 px-2 sticky left-0 z-20">Linha do Tempo</h3>
                   
-                  <div className="relative pl-4 space-y-6 before:absolute before:inset-0 before:ml-[25px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-300 before:to-transparent dark:before:via-white/10">
+                  <div className="relative flex items-start gap-6 min-w-max px-4 pb-4 before:absolute before:top-[20px] before:left-0 before:w-full before:h-0.5 before:bg-gradient-to-r before:from-transparent before:via-slate-300 before:to-transparent dark:before:via-white/10">
                      {profile.transactions.map((tx: any) => {
                          const style = getTxType(tx.type);
                          const Icon = style.icon;
                          return (
-                            <div key={tx.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0a0a0c] relative z-10 shrink-0 ${style.color}`}>
+                            <div key={tx.id} className="relative flex flex-col items-center w-[180px] shrink-0 group">
+                                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-[#0a0a0c] relative z-10 shrink-0 ${style.color} shadow-sm group-hover:scale-110 transition-transform`}>
                                     <Icon size={14} />
                                 </div>
-                                <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] px-4">
-                                   <div className="p-4 bg-white/70 dark:bg-white/5 backdrop-blur-sm border border-white/80 dark:border-white/10 rounded-2xl shadow-sm">
-                                      <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 mb-1">{new Date(tx.createdAt).toLocaleDateString()} • {new Date(tx.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                                      <p className="text-sm font-bold text-slate-800 dark:text-zinc-200">{tx.description}</p>
-                                      {tx.amountPurchase > 0 && <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 mt-1">Ticket: R$ {tx.amountPurchase.toFixed(2)}</p>}
-                                      {(tx.type === 'EARN' || tx.type === 'REDEEM') && <p className={`text-xs font-semibold mt-0.5 ${tx.type === 'EARN' ? 'text-blue-600 dark:text-blue-400' : 'text-red-500'}`}>CB: {tx.type==='EARN'?'+':'-'} R$ {tx.amountPoints.toFixed(2)}</p>}
+                                <div className="mt-4 w-full">
+                                   <div className="p-3.5 bg-white/70 dark:bg-white/5 backdrop-blur-sm border border-white/80 dark:border-white/10 rounded-2xl shadow-sm hover:shadow-md transition flex flex-col items-center text-center">
+                                      <p className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 mb-2">
+                                          {new Date(tx.createdAt).toLocaleDateString()} • {new Date(tx.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                      </p>
+                                      <p className="text-[13px] leading-snug font-bold text-slate-800 dark:text-zinc-200 mb-2 line-clamp-2" title={tx.description}>{tx.description}</p>
+                                      {tx.amountPurchase > 0 && <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Ticket: R$ {tx.amountPurchase.toFixed(2)}</p>}
+                                      {(tx.type === 'EARN' || tx.type === 'REDEEM') && <p className={`text-xs font-bold mt-1 px-2 py-0.5 rounded-md ${tx.type === 'EARN' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'}`}>CB: {tx.type==='EARN'?'+':'-'} R$ {tx.amountPoints.toFixed(2)}</p>}
                                    </div>
                                 </div>
                             </div>
                          );
                      })}
-                     {profile.transactions.length === 0 && <p className="text-center text-sm text-slate-500">Nenhuma interação registrada.</p>}
+                     {profile.transactions.length === 0 && <p className="text-center text-sm text-slate-500 pb-8 pt-4 w-full">Nenhuma interação registrada.</p>}
                   </div>
               </div>
           </div>
