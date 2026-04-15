@@ -6,6 +6,10 @@ import { TransactionController } from './controllers/transaction.controller';
 import { SettingsController } from './controllers/settings.controller';
 import { POSController } from './controllers/pos.controller';
 import { CustomerController } from './controllers/customer.controller';
+import { AuthController } from './controllers/auth.controller';
+import { UserController } from './controllers/user.controller';
+import { SaasController } from './controllers/saas.controller';
+import { authMiddleware, requireSuperAdmin, requireTenantOwner } from './middlewares/auth.middleware';
 import { CRMWorkers } from './workers/cron.worker';
 import { prisma } from '@repo/database';
 
@@ -33,6 +37,19 @@ app.post('/api/settings/:tenantSlug/rules', SettingsController.createRule);
 app.put('/api/settings/:tenantSlug/rules/:id', SettingsController.updateRule);
 app.delete('/api/settings/:tenantSlug/rules/:id', SettingsController.deleteRule);
 
+// Rotas Públicas
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+
+// Auth
+app.post('/api/auth/login', AuthController.login);
+
+// Módulo SaaS (Super Admin)
+app.post('/api/saas/companies', authMiddleware, requireSuperAdmin, SaasController.createTenant);
+
+// Módulo Tenant (Loja Configurações & Equipe)
+app.get('/api/users', authMiddleware, requireTenantOwner, UserController.listUsers);
+app.post('/api/users', authMiddleware, requireTenantOwner, UserController.createUser);
+
 // POS - Frente de Caixa
 app.get('/api/pos/:tenantSlug/customer', POSController.lookupCustomer);
 app.get('/api/pos/:tenantSlug/rules', POSController.getActiveRules);
@@ -41,6 +58,8 @@ app.post('/api/pos/:tenantSlug/purchase', POSController.registerPurchase);
 // Diretório de Clientes & CRM
 app.get('/api/customers/:tenantSlug', CustomerController.listCustomers);
 app.get('/api/customers/:tenantSlug/:profileId', CustomerController.getCustomerDetail);
+app.put('/api/customers/:tenantSlug/:profileId', CustomerController.updateCustomer);
+app.delete('/api/customers/:tenantSlug/:profileId', CustomerController.deleteCustomer);
 app.post('/api/customers/:tenantSlug/:profileId/notes', CustomerController.addNote);
 app.delete('/api/customers/:tenantSlug/notes/:noteId', CustomerController.deleteNote);
 app.post('/api/customers/:tenantSlug/message-segment', CustomerController.sendSegmentMessage);

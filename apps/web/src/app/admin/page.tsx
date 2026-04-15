@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 export default function AdminDashboard() {
   const [kpis, setKpis] = useState({ receitaBase: 0, fidelizados: 0, ticketMedio: 0 });
   const [chartData, setChartData] = useState([]);
+  const [recentClients, setRecentClients] = useState([]);
   
   useEffect(() => {
     fetch('http://localhost:3333/api/dashboard/burger-master')
@@ -13,6 +14,7 @@ export default function AdminDashboard() {
       .then(res => {
          if (res.kpis) setKpis(res.kpis);
          if (res.chartData) setChartData(res.chartData);
+         if (res.recentTransactions) setRecentClients(res.recentTransactions);
       })
       .catch(console.error);
   }, []);
@@ -83,6 +85,47 @@ export default function AdminDashboard() {
 
           </div>
         </div>
+      </div>
+
+      <div className="mt-8 w-full bg-white/40 dark:bg-[#0a0a0c]/60 backdrop-blur-3xl border border-white/60 dark:border-white/5 rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-colors">
+         <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6">Últimos 10 Clientes Pontuados</h3>
+         
+         <div className="w-full overflow-x-auto no-scrollbar">
+             <table className="w-full min-w-[800px] text-left border-collapse">
+                 <thead>
+                     <tr className="border-b border-black/5 dark:border-white/5">
+                         <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Cliente</th>
+                         <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Data</th>
+                         <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Descrição</th>
+                         <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider text-right">Valor Gasto</th>
+                         <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider text-right">Cashback Gerado</th>
+                     </tr>
+                 </thead>
+                 <tbody className="divide-y divide-black/5 dark:divide-white/5">
+                     {recentClients.map((tx: any) => (
+                         <tr key={tx.id} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                             <td className="px-4 py-4">
+                                 <div className="flex items-center gap-3">
+                                     <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 flex items-center justify-center font-bold text-xs overflow-hidden shrink-0">
+                                         {tx.customerProfile?.customer?.name ? tx.customerProfile.customer.name.charAt(0).toUpperCase() : '?'}
+                                     </div>
+                                     <p className="font-bold text-slate-900 dark:text-white text-sm">{tx.customerProfile?.customer?.name || 'Não Informado'}</p>
+                                 </div>
+                             </td>
+                             <td className="px-4 py-4 text-sm text-slate-600 dark:text-zinc-400">{new Date(tx.createdAt).toLocaleDateString()} {new Date(tx.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                             <td className="px-4 py-4 text-sm font-medium text-slate-700 dark:text-zinc-300">{tx.description}</td>
+                             <td className="px-4 py-4 text-sm font-bold text-slate-700 dark:text-zinc-300 text-right">R$ {tx.amountPurchase?.toFixed(2) || '0.00'}</td>
+                             <td className="px-4 py-4 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right">+ R$ {tx.amountPoints.toFixed(2)}</td>
+                         </tr>
+                     ))}
+                     {recentClients.length === 0 && (
+                         <tr>
+                             <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-zinc-400 text-sm font-medium">Nenhuma pontuação recente.</td>
+                         </tr>
+                     )}
+                 </tbody>
+             </table>
+         </div>
       </div>
     </div>
   );

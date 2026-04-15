@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '@repo/database';
 import { MessagingService } from '../services/messaging.service';
 import { WhatsAppService } from '../whatsapp/baileys.service';
+import { formatPhone } from '../utils/phone.util';
 
 const waService = new WhatsAppService();
 waService.initEngine().catch(console.error);
@@ -44,7 +45,7 @@ export class CustomerController {
           }).length
       };
 
-      return res.json({ customers, metrics });
+      return res.json({ customers, metrics, tenant });
     } catch (e: any) {
       return res.status(500).json({ error: e.message });
     }
@@ -90,7 +91,7 @@ export class CustomerController {
 
       const chartData = Object.keys(monthlyData).map(k => ({ month: k, value: monthlyData[k] }));
 
-      return res.json({ profile, chartData });
+      return res.json({ profile, chartData, tenant });
     } catch (e: any) {
       return res.status(500).json({ error: e.message });
     }
@@ -129,6 +130,56 @@ export class CustomerController {
 
           const result = await messagingService.sendToSegment(tenant.id, segment, template);
           return res.json(result);
+      } catch (e: any) {
+          return res.status(500).json({ error: e.message });
+      }
+  }
+
+  static async updateCustomer(req: Request, res: Response) {
+      try {
+          const { tenantSlug, profileId } = req.params;
+          const { name, phone, cpf, birthDate } = req.body;
+          const cleanPhone = phone ? formatPhone(phone) : undefined;
+
+          const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
+          if (!tenant) return res.status(404).json({ error: 'Tenant não encontrado' });
+
+          const profile = await prisma.customerProfile.findFirst({
+              where: { id: profileId, tenantId: tenant.id },
+              include: { customer: true }
+          });
+
+          if (!profile) return res.status(404).json({ error: 'Perfil não encontrado' });
+
+          const updatedCustomer = await prisma.customer.update({
+              where: { id: profile.customerId },
+              data: {
+                  ...(name !== undefined && { name }),
+                  ...(cleanPhone !== undefined && { phone: cleanPhone }),
+                  ...(cpf !== undefined && { cpf }),
+                  ...(birthDate !== undefined && { birthDate: birthDate ? new Date(birthDate) : null })
+              }
+          });
+
+          return res.json({ success: true, customer: updatedCustomer });
+      } catch (e: any) {
+          return res.status(500).json({ error: e.message });
+      }
+  }
+
+  static async deleteCustomer(req: Request, res: Response) {
+      try {
+          const { tenantSlug, profileId } = req.params;
+
+          const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
+          if (!tenant) return res.status(404).json({ error: 'Tenant não encontrado' });
+
+          const profile = await prisma.customerProfile.update({
+              where: { id: profileId, tenantId: tenant.id },
+              data: { isActive: false }
+          });
+
+          return res.json({ success: true, profile });
       } catch (e: any) {
           return res.status(500).json({ error: e.message });
       }

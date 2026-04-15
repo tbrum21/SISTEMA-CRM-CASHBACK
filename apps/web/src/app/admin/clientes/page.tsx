@@ -9,6 +9,7 @@ export default function CustomerDirectory() {
     const [search, setSearch] = useState('');
     const [segment, setSegment] = useState('TODOS');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [tenant, setTenant] = useState<any>(null);
 
     useEffect(() => {
         const timer = setTimeout(() => setDebouncedSearch(search), 500);
@@ -26,6 +27,7 @@ export default function CustomerDirectory() {
                 const data = await res.json();
                 if (data.customers) setCustomers(data.customers);
                 if (data.metrics) setMetrics(data.metrics);
+                if (data.tenant) setTenant(data.tenant);
              } catch (e) {
                  console.error(e);
              }
@@ -61,6 +63,13 @@ export default function CustomerDirectory() {
         };
         const s = styles[segment] || styles['NOVATO'];
         return <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${s}`}>{labels[segment] || segment}</span>;
+    };
+
+    const buildWhatsAppLink = (c: any) => {
+       if (!tenant) return `https://wa.me/${c.phone}`;
+       let msg = tenant.remarketingTemplate || 'Olá {name}! Sentimos sua falta. Temos um recado pra você!';
+       msg = msg.replace('{name}', c.name || 'amigo(a)').replace('{balance}', c.balance?.toFixed(2) || '0.00');
+       return `https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`;
     };
 
     return (
@@ -152,7 +161,7 @@ export default function CustomerDirectory() {
                                      <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">R$ {c.balance.toFixed(2)}</td>
                                      <td className="px-6 py-4 text-right">
                                          <div className="flex items-center justify-end gap-2">
-                                             <a href={`https://wa.me/${c.phone}`} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition" title="WhatsApp">
+                                             <a href={buildWhatsAppLink(c)} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition" title="WhatsApp">
                                                  <MessageCircle size={16} />
                                              </a>
                                              <Link href={`/admin/customer/${c.profile_id}`} className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition" title="Ver Ficha">

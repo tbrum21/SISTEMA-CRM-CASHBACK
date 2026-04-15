@@ -1,13 +1,19 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, User, Phone, Mail, Award, Target, Hash, MessageCircle, BarChart3, ShoppingBag, Gift, Clock, Save, Trash2, CalendarDays } from 'lucide-react';
+import { ArrowLeft, User, Phone, Mail, Award, Target, Hash, MessageCircle, BarChart3, ShoppingBag, Gift, Clock, Save, Trash2, CalendarDays, Edit2, X, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
+import { useRouter } from 'next/navigation';
 
 export default function CustomerProfile({ params }: { params: { id: string } }) {
   const [profile, setProfile] = useState<any>(null);
   const [chartData, setChartData] = useState([]);
   const [noteContent, setNoteContent] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({ name: '', phone: '', cpf: '', birthDate: '' });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [tenant, setTenant] = useState<any>(null);
+  const router = useRouter();
 
   const fetchProfile = async () => {
     try {
@@ -16,6 +22,15 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
       const data = await res.json();
       setProfile(data.profile);
       setChartData(data.chartData);
+      setTenant(data.tenant);
+      if (data.profile) {
+          setEditData({
+              name: data.profile.customer.name || '',
+              phone: data.profile.customer.phone || '',
+              cpf: data.profile.customer.cpf || '',
+              birthDate: data.profile.customer.birthDate ? new Date(data.profile.customer.birthDate).toISOString().split('T')[0] : ''
+          });
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -49,6 +64,36 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleUpdateCustomer = async () => {
+      try {
+          await fetch(`http://localhost:3333/api/customers/burger-master/${params.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(editData)
+          });
+          setIsEditing(false);
+          fetchProfile();
+      } catch (e) {
+          console.error(e);
+      }
+  };
+
+  const handleDeleteCustomer = async () => {
+      try {
+          await fetch(`http://localhost:3333/api/customers/burger-master/${params.id}`, { method: 'DELETE' });
+          router.push('/admin/clientes');
+      } catch (e) {
+          console.error(e);
+      }
+  };
+
+  const buildWhatsAppLink = () => {
+     if (!tenant || !profile) return `https://wa.me/${profile?.customer?.phone}`;
+     let msg = tenant.remarketingTemplate || 'Olá {name}! Sentimos sua falta. Temos um recado pra você!';
+     msg = msg.replace('{name}', profile.customer.name || 'amigo(a)').replace('{balance}', profile.balance.toFixed(2));
+     return `https://wa.me/${profile.customer.phone}?text=${encodeURIComponent(msg)}`;
   };
 
   if (loading) return <div className="p-10 flex justify-center"><div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div></div>;
@@ -177,6 +222,16 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
             
             {/* Card Perfil Destaque */}
             <div className="bg-white/40 dark:bg-[#0a0a0c]/40 backdrop-blur-2xl border border-white/60 dark:border-white/5 p-8 rounded-[2.5rem] shadow-sm flex flex-col items-center relative overflow-hidden transition-colors">
+                 
+                 <div className="absolute top-6 right-6 flex items-center gap-2">
+                     <button onClick={() => setIsEditing(true)} className="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition tooltip-tl">
+                        <Edit2 size={16} />
+                     </button>
+                     <button onClick={() => setIsDeleting(true)} className="p-2 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-full hover:bg-red-100 dark:hover:bg-red-500/20 transition tooltip-tl">
+                        <Trash2 size={16} />
+                     </button>
+                 </div>
+
                  <div className="w-[120px] h-[120px] rounded-[1.8rem] bg-indigo-50 mt-2 mb-5 border-4 border-white dark:border-zinc-800 shadow-xl overflow-hidden shadow-black/10 flex items-center justify-center text-indigo-300">
                     <User size={64} />
                  </div>
@@ -207,7 +262,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
                  </div>
 
                  <button 
-                     onClick={() => window.open(`https://wa.me/${profile.customer.phone}`, '_blank')}
+                     onClick={() => window.open(buildWhatsAppLink(), '_blank')}
                      className="w-full mt-8 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 transition-transform active:scale-95"
                  >
                      <MessageCircle size={18} /> Impactar via WhatsApp
@@ -255,6 +310,61 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
 
         </div>
       </div>
+
+      {/* MODAL DE EDIÇÃO */}
+      {isEditing && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-[#12121a] w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="px-6 py-4 border-b border-black/5 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/5">
+                    <h3 className="font-bold text-lg text-slate-800 dark:text-white">Editar Perfil</h3>
+                    <button onClick={() => setIsEditing(false)} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition"><X size={18} /></button>
+                </div>
+                <div className="p-6 space-y-4">
+                    <div>
+                        <label className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">Nome Completo</label>
+                        <input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white" />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">Telefone (WhatsApp)</label>
+                        <input type="text" value={editData.phone} onChange={e => setEditData({...editData, phone: e.target.value})} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white" />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">CPF</label>
+                        <input type="text" value={editData.cpf} onChange={e => setEditData({...editData, cpf: e.target.value})} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white" />
+                    </div>
+                    <div>
+                        <label className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5 block">Data de Nascimento</label>
+                        <input type="date" value={editData.birthDate} onChange={e => setEditData({...editData, birthDate: e.target.value})} className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-black/5 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white" />
+                    </div>
+                </div>
+                <div className="px-6 py-4 border-t border-black/5 dark:border-white/5 flex justify-end gap-3 bg-slate-50 dark:bg-white/5">
+                    <button onClick={() => setIsEditing(false)} className="px-5 py-2.5 rounded-xl font-semibold text-slate-600 dark:text-zinc-300 hover:bg-black/5 dark:hover:bg-white/10 transition">Cancelar</button>
+                    <button onClick={handleUpdateCustomer} className="px-5 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 transition">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+      )}
+
+      {/* MODAL DE CONFORMAÇÃO DE EXCLUSÃO */}
+      {isDeleting && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white dark:bg-[#12121a] w-full max-w-md rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-8 flex flex-col items-center text-center">
+                    <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center mb-6">
+                        <AlertTriangle size={32} />
+                    </div>
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">Inativar Cliente?</h3>
+                    <p className="text-slate-500 dark:text-zinc-400 mb-8">Esta ação irá ocultar o cliente <strong>{profile.customer.name}</strong> do diretório. O histórico de compras e saldo permanecerão a salvo no banco de dados.</p>
+                    
+                    <div className="w-full flex flex-col sm:flex-row gap-3">
+                        <button onClick={() => setIsDeleting(false)} className="flex-1 py-3.5 rounded-xl font-semibold text-slate-700 dark:text-zinc-300 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition">Manter Cliente</button>
+                        <button onClick={handleDeleteCustomer} className="flex-1 py-3.5 rounded-xl font-bold bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-600/20 transition">Sim, Inativar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+      )}
+
     </div>
   );
 }

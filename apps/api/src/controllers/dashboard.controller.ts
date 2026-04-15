@@ -34,13 +34,25 @@ export class DashboardController {
         { name: 'Qua', cashback: receitaFeitaComCashback > 0 ? receitaFeitaComCashback : 8000, normal: 9800 },
       ];
 
+      const recentTransactions = await prisma.transaction.findMany({
+          where: { tenantId: tenant.id, type: 'EARN' },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          include: {
+              customerProfile: {
+                  include: { customer: true }
+              }
+          }
+      });
+
       return res.json({
         kpis: {
             receitaBase: receitaFeitaComCashback,
             fidelizados: totalFidelizados,
             ticketMedio: avgTicket
         },
-        chartData
+        chartData,
+        recentTransactions
       });
       
     } catch (error: any) {

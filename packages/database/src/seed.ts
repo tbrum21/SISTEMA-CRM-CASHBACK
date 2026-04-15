@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -33,11 +34,29 @@ async function main() {
           ELSE 'NOVATO'
         END AS computed_segment
       FROM "CustomerProfile" cp
-      JOIN "Customer" c ON c.id = cp."customerId";
+      JOIN "Customer" c ON c.id = cp."customerId"
+      WHERE cp."isActive" = true;
     `);
 
-    // 1. O Tenant Lojista
-    const tenant = await prisma.tenant.upsert({
+    console.log('👑 Criando Super Administrador do EloBonus...');
+    const superAdminPassword = await bcrypt.hash('123456', 10);
+    const superAdmin = await prisma.user.upsert({
+      where: { email: 'thayrony14@gmail.com' },
+      update: {
+          role: 'SUPER_ADMIN',
+          passwordHash: superAdminPassword,
+          name: 'Thayrony (Fundador)'
+      },
+      create: {
+          email: 'thayrony14@gmail.com',
+          name: 'Thayrony (Fundador)',
+          passwordHash: superAdminPassword,
+          role: 'SUPER_ADMIN'
+      }
+    });
+
+    console.log('🍔 Configurando Tenant Lojista de Exemplo...');
+    const burgerMaster = await prisma.tenant.upsert({
         where: { slug: 'burger-master' },
         update: {},
         create: {
@@ -54,22 +73,35 @@ async function main() {
         update: {},
         create: {
             id: 'default-rule',
-            tenantId: tenant.id,
+            tenantId: burgerMaster.id,
             name: 'Cashback Padrão 10%',
             type: 'PERCENTAGE',
             value: 10
         }
     }).catch(async () => {
         // Fallback for duplicates if without id constraint
-        const rule = await prisma.rewardRule.findFirst({ where: { name: 'Cashback Padrão 10%', tenantId: tenant.id }});
+        const rule = await prisma.rewardRule.findFirst({ where: { name: 'Cashback Padrão 10%', tenantId: burgerMaster.id }});
         if(!rule) {
             await prisma.rewardRule.create({
-                data: { tenantId: tenant.id, name: 'Cashback Padrão 10%', type: 'PERCENTAGE', value: 10 }
+                data: { tenantId: burgerMaster.id, name: 'Cashback Padrão 10%', type: 'PERCENTAGE', value: 10 }
             });
         }
     });
 
-    // 3. Clientes Demo (Oito Perfis Variados)
+    const ownerPassword = await bcrypt.hash('123456', 10);
+    await prisma.user.upsert({
+        where: { email: 'admin@burgermaster.com.br' },
+        update: { passwordHash: ownerPassword, role: 'OWNER' },
+        create: {
+            tenantId: burgerMaster.id,
+            name: 'Gerente Burger Master',
+            email: 'admin@burgermaster.com.br',
+            passwordHash: ownerPassword,
+            role: 'OWNER'
+        }
+    });
+
+    // 2. Criação dos produtos para "Cardápio de Fidelidade"os)
     const mockCustomers = [
         { phone: '5511999999999', name: 'Carlos Azevedo', segment: 'CAMPEAO', ltv: 4500, balance: 450, daysAgo: 2, tx: 12 },
         { phone: '5511988887777', name: 'Mariana Silva', segment: 'CAMPEAO', ltv: 3200, balance: 320, daysAgo: 5, tx: 10 },
@@ -94,7 +126,7 @@ async function main() {
         txDate.setDate(txDate.getDate() - mock.daysAgo);
 
         const profile = await prisma.customerProfile.upsert({
-            where: { tenantId_customerId: { tenantId: tenant.id, customerId: cust.id } },
+            where: { tenantId_customerId: { tenantId: burgerMaster.id, customerId: cust.id } },
             update: {
                 balance: mock.balance,
                 lifetimeValue: mock.ltv,
@@ -103,7 +135,7 @@ async function main() {
                 lastPurchaseAt: txDate
             },
             create: {
-                tenantId: tenant.id,
+                tenantId: burgerMaster.id,
                 customerId: cust.id,
                 balance: mock.balance,
                 lifetimeValue: mock.ltv,
@@ -118,7 +150,7 @@ async function main() {
         if (!hasTx) {
             await prisma.transaction.create({
                 data: {
-                  tenantId: tenant.id,
+                  tenantId: burgerMaster.id,
                   customerProfileId: profile.id,
                   type: 'EARN',
                   amountPurchase: mock.ltv,
@@ -133,7 +165,7 @@ async function main() {
             if (mock.daysAgo > 10) {
                await prisma.transaction.create({
                     data: {
-                      tenantId: tenant.id,
+                      tenantId: burgerMaster.id,
                       customerProfileId: profile.id,
                       type: 'MESSAGE',
                       amountPurchase: 0,

@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '@repo/database';
+import { CustomerProfileService } from '../services/customer-profile.service';
+import { formatPhone } from '../utils/phone.util';
 
 export class POSController {
 
@@ -16,8 +18,9 @@ export class POSController {
       const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
       if (!tenant) return res.status(404).json({ error: 'Tenant não encontrado.' });
 
+      const cleanPhone = formatPhone(String(phone));
       const customer = await prisma.customer.findUnique({
-        where: { phone: String(phone).replace(/\D/g, '') },
+        where: { phone: cleanPhone },
         include: {
           profiles: {
             where: { tenantId: tenant.id },
@@ -80,7 +83,7 @@ export class POSController {
       const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
       if (!tenant) return res.status(404).json({ error: 'Tenant não encontrado.' });
 
-      const cleanPhone = String(phone).replace(/\D/g, '');
+      const cleanPhone = formatPhone(String(phone));
       const amount = Number(purchaseAmount);
 
       // Upsert do customer

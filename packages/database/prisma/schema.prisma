@@ -65,6 +65,7 @@ model CustomerProfile {
   balance               Float         @default(0)
   lifetimeValue         Float         @default(0)
   totalTransactions     Int           @default(0)
+  isActive              Boolean       @default(true)
   
   lastPurchaseAt        DateTime?     
   lastRemarketingSentAt DateTime?     

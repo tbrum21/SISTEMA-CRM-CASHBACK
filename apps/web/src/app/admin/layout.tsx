@@ -2,6 +2,7 @@
 import { Home, Settings as SettingsIcon, Sun, Moon, Link as LinkIcon, Award, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { AuthGuard } from '../../components/AuthGuard';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
@@ -21,6 +22,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const isActive = (path: string) => pathname === path;
 
   return (
+    <AuthGuard>
     <div className="flex w-full min-h-screen p-4 pl-6 gap-8">
       
       {/* Floating Sidebar (Left) */}
@@ -72,5 +74,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </main>
 
     </div>
+    </AuthGuard>
   )
 }
