@@ -51,4 +51,35 @@ export class SaasController {
             return res.status(500).json({ error: e.message });
         }
     }
+
+    // List all Tenants with their Owners and customer count
+    static async listTenants(req: Request, res: Response) {
+        try {
+            const tenants = await prisma.tenant.findMany({
+                include: {
+                    users: {
+                        select: { id: true, name: true, email: true, role: true }
+                    },
+                    customerProfiles: {
+                        select: { id: true }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+
+            const mapped = tenants.map(t => ({
+                id: t.id,
+                name: t.name,
+                slug: t.slug,
+                document: t.document,
+                createdAt: t.createdAt,
+                users: t.users,
+                customerCount: t.customerProfiles.length
+            }));
+
+            return res.json({ success: true, tenants: mapped });
+        } catch(e: any) {
+            return res.status(500).json({ error: e.message });
+        }
+    }
 }

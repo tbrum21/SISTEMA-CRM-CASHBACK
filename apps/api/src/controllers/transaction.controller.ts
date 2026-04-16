@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 import { prisma } from '@repo/database';
 import { TransactionService } from '../services/transaction.service';
-import { WhatsAppService } from '../whatsapp/baileys.service';
+import { waService } from '../whatsapp/baileys.service';
 
-const waService = new WhatsAppService();
 const txService = new TransactionService(prisma);
 
 waService.initEngine().catch(console.error);

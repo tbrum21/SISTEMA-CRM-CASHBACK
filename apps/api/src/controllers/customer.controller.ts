@@ -1,10 +1,9 @@
 import { Request, Response } from 'express';
 import { prisma } from '@repo/database';
 import { MessagingService } from '../services/messaging.service';
-import { WhatsAppService } from '../whatsapp/baileys.service';
+import { WhatsAppService, waService } from '../whatsapp/baileys.service';
 import { formatPhone } from '../utils/phone.util';
 
-const waService = new WhatsAppService();
 waService.initEngine().catch(console.error);
 const messagingService = new MessagingService(prisma, waService);
 

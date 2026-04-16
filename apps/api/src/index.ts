@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import path from 'path';
+
+dotenv.config({ path: path.join(__dirname, '../../../.env') });
 import express from 'express';
 import cors from 'cors';
 import { DashboardController } from './controllers/dashboard.controller';
@@ -45,6 +48,7 @@ app.post('/api/auth/login', AuthController.login);
 
 // Módulo SaaS (Super Admin)
 app.post('/api/saas/companies', authMiddleware, requireSuperAdmin, SaasController.createTenant);
+app.get('/api/saas/companies', authMiddleware, requireSuperAdmin, SaasController.listTenants);
 
 // Módulo Tenant (Loja Configurações & Equipe)
 app.get('/api/users', authMiddleware, requireTenantOwner, UserController.listUsers);

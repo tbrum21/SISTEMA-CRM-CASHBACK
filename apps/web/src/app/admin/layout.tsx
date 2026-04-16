@@ -6,17 +6,31 @@ import { AuthGuard } from '../../components/AuthGuard';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const pathname = usePathname();
 
   useEffect(() => {
     if (document.documentElement.classList.contains('dark')) {
       setIsDark(true);
     }
+    const userStr = localStorage.getItem('@elobonus:user');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        setUserRole(u?.role || null);
+      } catch(e){}
+    }
   }, []);
 
   const toggleTheme = () => {
     document.documentElement.classList.toggle('dark');
     setIsDark(!isDark);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('@elobonus:token');
+    localStorage.removeItem('@elobonus:user');
+    window.location.href = '/login';
   };
 
   const isActive = (path: string) => pathname === path;
@@ -57,12 +71,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <a href="/admin" className={`transition ${isActive('/admin') ? 'text-black dark:text-white' : 'hover:text-black dark:hover:text-white'}`}>Visão Geral</a>
             <a href="/admin/pontuacao" className={`transition ${isActive('/admin/pontuacao') ? 'text-black dark:text-white' : 'hover:text-black dark:hover:text-white'}`}>Pontuação</a>
             <a href="/admin/settings" className={`transition ${isActive('/admin/settings') ? 'text-black dark:text-white' : 'hover:text-black dark:hover:text-white'}`}>Configurações</a>
-            <a href="/admin/clientes" className="px-5 py-2 bg-[#171717] dark:bg-[#1a1a24] dark:border dark:border-white/10 dark:text-white text-white rounded-full shadow-lg shadow-black/20 transition-colors">Diretório de Clientes</a>
+            <a href="/admin/clientes" className={`transition ${isActive('/admin/clientes') ? 'px-5 py-2 bg-[#171717] dark:bg-[#1a1a24] dark:border dark:border-white/10 dark:text-white text-white rounded-full shadow-lg shadow-black/20' : 'hover:text-black dark:hover:text-white'}`}>Diretório de Clientes</a>
+            {userRole === 'SUPER_ADMIN' && (
+               <a href="/admin/saas" className={`transition ${isActive('/admin/saas') ? 'px-5 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full shadow-lg shadow-purple-500/30' : 'text-purple-600 dark:text-purple-400 hover:text-purple-700'}`}>SaaS Admin</a>
+            )}
           </nav>
 
           <div className="flex items-center gap-4">
             <button onClick={toggleTheme} className="w-10 h-10 rounded-full bg-white/50 dark:bg-white/5 dark:border dark:border-white/10 dark:text-zinc-300 backdrop-blur-md flex items-center justify-center shadow-sm text-slate-600 hover:bg-white dark:hover:bg-white/10 transition">
               {isDark ? <Sun size={18} className="text-amber-300" /> : <Moon size={18} className="text-indigo-600" />}
+            </button>
+            <button onClick={handleLogout} className="px-5 py-2 bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 rounded-full font-bold shadow-sm hover:bg-red-100 dark:hover:bg-red-500/20 transition hover:-translate-y-0.5">
+               Sair
             </button>
           </div>
         </header>
