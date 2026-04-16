@@ -1,6 +1,6 @@
 'use client';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Users, Wallet, Zap, ArrowUpRight, Settings } from 'lucide-react';
+import { TrendingUp, Users, Wallet, Zap, ArrowUpRight, Settings, Award, RefreshCw, Package, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function AdminDashboard() {
@@ -8,7 +8,10 @@ export default function AdminDashboard() {
   const [chartData, setChartData] = useState([]);
   const [recentClients, setRecentClients] = useState([]);
   
-  useEffect(() => {
+  const [loading, setLoading] = useState(false);
+  
+  const fetchData = () => {
+    setLoading(true);
     fetch('http://localhost:3333/api/dashboard/burger-master')
       .then(res => res.json())
       .then(res => {
@@ -16,7 +19,12 @@ export default function AdminDashboard() {
          if (res.chartData) setChartData(res.chartData);
          if (res.recentTransactions) setRecentClients(res.recentTransactions);
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   return (
@@ -34,7 +42,12 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-white/40 dark:bg-[#0a0a0c]/60 backdrop-blur-3xl border border-white/60 dark:border-white/5 rounded-[2.5rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] transition-colors">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-bold text-slate-800 dark:text-white transition-colors">Projeção Financeira</h3>
+            <div className="flex items-center gap-4">
+               <h3 className="text-xl font-bold text-slate-800 dark:text-white transition-colors">Projeção Financeira</h3>
+               <button onClick={fetchData} disabled={loading} className="p-2 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-full transition-colors disabled:opacity-50 group">
+                  <RefreshCw size={16} className={`text-slate-600 dark:text-zinc-400 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
+               </button>
+            </div>
             <div className="px-4 py-1.5 bg-white dark:bg-zinc-800 dark:border-zinc-700/50 rounded-full text-xs font-bold text-slate-500 dark:text-zinc-400 shadow-sm border border-white transition-colors">Previsão Semanal</div>
           </div>
           <div className="h-[320px] w-full">
@@ -67,6 +80,14 @@ export default function AdminDashboard() {
           
           <div className="space-y-4 flex-1">
             
+            <a href="/admin/pontuacao" className="bg-white/70 dark:bg-zinc-900/50 hover:bg-white dark:hover:bg-zinc-800 border border-white/80 dark:border-zinc-800 p-5 rounded-[1.5rem] flex items-center justify-between cursor-pointer transition shadow-sm hover:shadow-md block">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-purple-500 rounded-full text-white flex items-center justify-center shadow-lg shadow-purple-500/20"><Award size={18}/></div>
+                    <p className="font-bold text-slate-800 dark:text-zinc-200 text-[15px]">Pontuar Cliente</p>
+                </div>
+                <ArrowUpRight size={20} className="text-slate-400 dark:text-zinc-500"/>
+            </a>
+
             <a href="/admin/customer/123" className="bg-white/70 dark:bg-zinc-900/50 hover:bg-white dark:hover:bg-zinc-800 border border-white/80 dark:border-zinc-800 p-5 rounded-[1.5rem] flex items-center justify-between cursor-pointer transition shadow-sm hover:shadow-md block">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-[#2563eb] rounded-full text-white flex items-center justify-center shadow-lg shadow-blue-500/20"><Users size={18}/></div>
@@ -75,10 +96,26 @@ export default function AdminDashboard() {
                 <ArrowUpRight size={20} className="text-slate-400 dark:text-zinc-500"/>
             </a>
 
+            <a href="/admin/produtos" className="bg-white/70 dark:bg-zinc-900/50 hover:bg-white dark:hover:bg-zinc-800 border border-white/80 dark:border-zinc-800 p-5 rounded-[1.5rem] flex items-center justify-between cursor-pointer transition shadow-sm hover:shadow-md block">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-emerald-500 rounded-full text-white flex items-center justify-center shadow-lg shadow-emerald-500/20"><Package size={18}/></div>
+                    <p className="font-bold text-slate-800 dark:text-zinc-200 text-[15px]">Catálogo de Produtos</p>
+                </div>
+                <ArrowUpRight size={20} className="text-slate-400 dark:text-zinc-500"/>
+            </a>
+
+            <a href="/admin/resgates" className="bg-white/70 dark:bg-zinc-900/50 hover:bg-white dark:hover:bg-zinc-800 border border-white/80 dark:border-zinc-800 p-5 rounded-[1.5rem] flex items-center justify-between cursor-pointer transition shadow-sm hover:shadow-md block">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-amber-500 rounded-full text-white flex items-center justify-center shadow-lg shadow-amber-500/20"><Truck size={18}/></div>
+                    <p className="font-bold text-slate-800 dark:text-zinc-200 text-[15px]">Fila de Entregas</p>
+                </div>
+                <ArrowUpRight size={20} className="text-slate-400 dark:text-zinc-500"/>
+            </a>
+
             <a href="/admin/settings" className="bg-[#121212] dark:bg-indigo-900 hover:bg-black dark:hover:bg-indigo-800 p-5 rounded-[1.5rem] flex items-center justify-between cursor-pointer transition shadow-xl shadow-black/20 mt-auto group border border-transparent dark:border-indigo-500/30 block">
                 <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-white/20 dark:bg-indigo-500/30 rounded-full text-white flex items-center justify-center"><Settings size={18}/></div>
-                    <p className="font-bold text-white text-[15px]">Configurações do Tenant</p>
+                    <p className="font-bold text-white text-[15px]">Configurações</p>
                 </div>
                 <ArrowUpRight size={20} className="text-white bg-white/10 p-1 rounded-full group-hover:bg-white/20 transition"/>
             </a>
@@ -98,7 +135,7 @@ export default function AdminDashboard() {
                          <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Data</th>
                          <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider">Descrição</th>
                          <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider text-right">Valor Gasto</th>
-                         <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider text-right">Cashback Gerado</th>
+                         <th className="px-4 py-3 text-xs font-black text-slate-400 dark:text-zinc-500 uppercase tracking-wider text-right">Pontos Gerados</th>
                      </tr>
                  </thead>
                  <tbody className="divide-y divide-black/5 dark:divide-white/5">
@@ -115,7 +152,7 @@ export default function AdminDashboard() {
                              <td className="px-4 py-4 text-sm text-slate-600 dark:text-zinc-400">{new Date(tx.createdAt).toLocaleDateString()} {new Date(tx.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
                              <td className="px-4 py-4 text-sm font-medium text-slate-700 dark:text-zinc-300">{tx.description}</td>
                              <td className="px-4 py-4 text-sm font-bold text-slate-700 dark:text-zinc-300 text-right">R$ {tx.amountPurchase?.toFixed(2) || '0.00'}</td>
-                             <td className="px-4 py-4 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right">+ R$ {tx.amountPoints.toFixed(2)}</td>
+                             <td className="px-4 py-4 text-sm font-bold text-emerald-600 dark:text-emerald-400 text-right">+ {tx.amountPoints.toFixed(0)} pts</td>
                          </tr>
                      ))}
                      {recentClients.length === 0 && (

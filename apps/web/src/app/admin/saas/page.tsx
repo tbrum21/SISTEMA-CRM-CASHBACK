@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Building2, ShieldCheck, Plus, Store, Users, FileText } from 'lucide-react';
+import { Building2, ShieldCheck, Plus, Store, Users, FileText, X, TrendingUp, DollarSign, Activity, Users2, ShoppingCart, Award } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function SaasDashboard() {
@@ -10,6 +10,11 @@ export default function SaasDashboard() {
   const [authChecking, setAuthChecking] = useState(true);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+  
+  const [selectedTenant, setSelectedTenant] = useState<any>(null);
+  const [tenantMetrics, setTenantMetrics] = useState<any>(null);
+  const [loadingMetrics, setLoadingMetrics] = useState(false);
+
   const router = useRouter();
 
   useEffect(() => {
@@ -40,6 +45,26 @@ export default function SaasDashboard() {
     } catch(e) {
         console.error('Erro ao buscar tenants', e);
     }
+  };
+
+  const openTenantPanel = async (tenant: any) => {
+      setSelectedTenant(tenant);
+      setLoadingMetrics(true);
+      setTenantMetrics(null);
+      try {
+          const token = localStorage.getItem('@elobonus:token');
+          const res = await fetch(`http://localhost:3333/api/saas/companies/${tenant.id}/metrics`, {
+              headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+              const data = await res.json();
+              setTenantMetrics(data.metrics);
+          }
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setLoadingMetrics(false);
+      }
   };
 
   const handleCreateCompany = async (e: React.FormEvent) => {
@@ -157,7 +182,7 @@ export default function SaasDashboard() {
                             </thead>
                             <tbody className="divide-y divide-black/5 dark:divide-white/5">
                                 {tenants.map((t: any) => (
-                                    <tr key={t.id} className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                                    <tr key={t.id} onClick={() => openTenantPanel(t)} className="cursor-pointer hover:bg-black/[0.04] dark:hover:bg-white/[0.04] transition-colors">
                                         <td className="px-4 py-4">
                                             <p className="font-bold text-slate-900 dark:text-white text-[15px]">{t.name}</p>
                                             <p className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-1"><FileText size={12}/>{t.slug}</p>
@@ -190,6 +215,96 @@ export default function SaasDashboard() {
                </div>
            </div>
        </div>
+
+       {/* Panel Slide-over */}
+       {selectedTenant && (
+           <>
+               <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity" onClick={() => setSelectedTenant(null)} />
+               <div className="fixed inset-y-0 right-0 w-full md:w-[500px] bg-white/80 dark:bg-[#0a0a0c]/80 backdrop-blur-3xl border-l border-white/60 dark:border-white/10 z-50 shadow-2xl p-8 flex flex-col transition-transform transform translate-x-0">
+                   <div className="flex justify-between items-center mb-8">
+                       <div>
+                           <h2 className="text-2xl font-black text-slate-900 dark:text-white">{selectedTenant.name}</h2>
+                           <p className="text-slate-500 dark:text-zinc-400 font-medium tracking-tight">Indicadores de Performance</p>
+                       </div>
+                       <button onClick={() => setSelectedTenant(null)} className="p-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-full transition-colors group">
+                           <X size={20} className="text-slate-700 dark:text-white group-hover:rotate-90 transition-transform" />
+                       </button>
+                   </div>
+
+                   {loadingMetrics ? (
+                       <div className="flex-1 flex items-center justify-center">
+                           <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent flex rounded-full animate-spin"></div>
+                       </div>
+                   ) : tenantMetrics ? (
+                       <div className="space-y-4 overflow-y-auto no-scrollbar pb-10">
+                           <div className="grid grid-cols-2 gap-4">
+                               <div className="bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-500/10 dark:to-emerald-500/5 p-5 rounded-3xl border border-emerald-200/50 dark:border-emerald-500/20">
+                                   <div className="flex items-center gap-2 mb-3">
+                                       <div className="p-2 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl"><DollarSign size={18}/></div>
+                                       <span className="text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase">Faturamento</span>
+                                   </div>
+                                   <div className="text-2xl font-black text-slate-800 dark:text-white">
+                                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tenantMetrics.revenue)}
+                                   </div>
+                               </div>
+
+                               <div className="bg-gradient-to-br from-indigo-50 to-indigo-100/50 dark:from-indigo-500/10 dark:to-indigo-500/5 p-5 rounded-3xl border border-indigo-200/50 dark:border-indigo-500/20">
+                                   <div className="flex items-center gap-2 mb-3">
+                                       <div className="p-2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-xl"><TrendingUp size={18}/></div>
+                                       <span className="text-xs font-bold text-indigo-800 dark:text-indigo-400 uppercase">Ticket Médio</span>
+                                   </div>
+                                   <div className="text-2xl font-black text-slate-800 dark:text-white">
+                                       {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(tenantMetrics.avgTicket)}
+                                   </div>
+                               </div>
+                           </div>
+
+                           <div className="grid grid-cols-2 gap-4">
+                               <div className="bg-white/50 dark:bg-white/5 p-5 rounded-3xl border border-slate-200/50 dark:border-white/10 relative overflow-hidden">
+                                   <div className="flex items-center gap-2 mb-3 text-slate-500 dark:text-zinc-400">
+                                       <ShoppingCart size={18}/> <span className="text-sm font-bold">Vendas Totais</span>
+                                   </div>
+                                   <div className="text-2xl font-black text-slate-800 dark:text-white">{tenantMetrics.salesCount} <span className="text-sm font-medium text-slate-400">pedidos</span></div>
+                               </div>
+
+                               <div className="bg-white/50 dark:bg-white/5 p-5 rounded-3xl border border-slate-200/50 dark:border-white/10 relative overflow-hidden">
+                                   <div className="flex items-center gap-2 mb-3 text-slate-500 dark:text-zinc-400">
+                                       <Users2 size={18}/> <span className="text-sm font-bold">Clientes VIP</span>
+                                   </div>
+                                   <div className="text-2xl font-black text-slate-800 dark:text-white">{tenantMetrics.customerCount} <span className="text-sm font-medium text-slate-400">retidos</span></div>
+                               </div>
+                          </div>
+
+                          <hr className="border-black/5 dark:border-white/5 my-2" />
+
+                          <div className="bg-purple-50 dark:bg-purple-500/10 p-5 rounded-3xl border border-purple-100 dark:border-purple-500/20">
+                               <div className="flex items-center gap-2 mb-2 text-purple-600 dark:text-purple-400">
+                                   <Award size={18}/> <span className="text-sm font-bold">Cashback Distribuído</span>
+                               </div>
+                               <div className="text-3xl font-black text-slate-800 dark:text-white mb-2">
+                                   {tenantMetrics.cashbackIssued} <span className="text-base font-medium text-slate-500 dark:text-slate-400">pts gerados</span>
+                               </div>
+                               <div className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                   <Activity size={14}/> {tenantMetrics.cashbackRedeemed} pts resgatados
+                               </div>
+                           </div>
+
+                           <div className="bg-white/50 dark:bg-white/5 p-5 rounded-3xl border border-slate-200/50 dark:border-white/10 flex justify-between items-center">
+                               <div>
+                                   <div className="flex items-center gap-2 mb-1 text-slate-500 dark:text-zinc-400">
+                                       <ShieldCheck size={18}/> <span className="text-sm font-bold">Membros de Equipe</span>
+                                   </div>
+                                   <div className="text-sm text-slate-400">Usuários administrativos dessa loja no Admin.</div>
+                               </div>
+                               <div className="text-3xl font-black text-slate-800 dark:text-white bg-slate-100 dark:bg-white/10 w-16 h-16 rounded-full flex items-center justify-center">{tenantMetrics.userCount}</div>
+                           </div>
+                       </div>
+                   ) : (
+                        <div className="text-center py-20 text-slate-500 font-medium">Não foi possível carregar os dados no momento.</div>
+                   )}
+               </div>
+           </>
+       )}
     </div>
   );
 }

@@ -92,7 +92,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
   const buildWhatsAppLink = () => {
      if (!tenant || !profile) return `https://wa.me/${profile?.customer?.phone}`;
      let msg = tenant.remarketingTemplate || 'Olá {name}! Sentimos sua falta. Temos um recado pra você!';
-     msg = msg.replace('{name}', profile.customer.name || 'amigo(a)').replace('{balance}', profile.balance.toFixed(2));
+     msg = msg.replace('{name}', profile.customer.name || 'amigo(a)').replace('{balance}', profile.balance.toFixed(0) + ' pts');
      return `https://wa.me/${profile.customer.phone}?text=${encodeURIComponent(msg)}`;
   };
 
@@ -152,7 +152,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
              </div>
              <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 rounded-3xl p-5 shadow-sm">
                 <div className="flex items-center gap-3 mb-2"><Award size={16} className="text-emerald-500 dark:text-emerald-400"/><span className="text-xs font-semibold text-emerald-600 dark:text-emerald-500 uppercase tracking-wider">Saldo</span></div>
-                <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">R$ {profile.balance.toFixed(2)}</p>
+                <p className="text-2xl font-black text-emerald-700 dark:text-emerald-400">{profile.balance.toFixed(0)} pts</p>
              </div>
           </div>
 
@@ -205,7 +205,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
                                       </p>
                                       <p className="text-[13px] leading-snug font-bold text-slate-800 dark:text-zinc-200 mb-2 line-clamp-2" title={tx.description}>{tx.description}</p>
                                       {tx.amountPurchase > 0 && <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Ticket: R$ {tx.amountPurchase.toFixed(2)}</p>}
-                                      {(tx.type === 'EARN' || tx.type === 'REDEEM') && <p className={`text-xs font-bold mt-1 px-2 py-0.5 rounded-md ${tx.type === 'EARN' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'}`}>CB: {tx.type==='EARN'?'+':'-'} R$ {tx.amountPoints.toFixed(2)}</p>}
+                                      {(tx.type === 'EARN' || tx.type === 'REDEEM') && <p className={`text-xs font-bold mt-1 px-2 py-0.5 rounded-md ${tx.type === 'EARN' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400' : 'bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400'}`}>{tx.type==='EARN'?'+':'-'} {Math.abs(tx.amountPoints).toFixed(0)} pts</p>}
                                    </div>
                                 </div>
                             </div>

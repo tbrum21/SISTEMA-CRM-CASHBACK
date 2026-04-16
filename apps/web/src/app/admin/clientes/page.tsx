@@ -68,7 +68,7 @@ export default function CustomerDirectory() {
     const buildWhatsAppLink = (c: any) => {
        if (!tenant) return `https://wa.me/${c.phone}`;
        let msg = tenant.remarketingTemplate || 'Olá {name}! Sentimos sua falta. Temos um recado pra você!';
-       msg = msg.replace('{name}', c.name || 'amigo(a)').replace('{balance}', c.balance?.toFixed(2) || '0.00');
+       msg = msg.replace('{name}', c.name || 'amigo(a)').replace('{balance}', c.balance?.toFixed(0) + ' pts' || '0 pts');
        return `https://wa.me/${c.phone}?text=${encodeURIComponent(msg)}`;
     };
 
@@ -101,7 +101,7 @@ export default function CustomerDirectory() {
                  </div>
                  <div className="bg-white/40 dark:bg-[#0a0a0c]/40 backdrop-blur-2xl border border-white/60 dark:border-white/5 p-6 rounded-[2rem] shadow-sm flex items-center gap-4 hover:-translate-y-1 transition-transform">
                      <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center"><Wallet size={20} /></div>
-                     <div><p className="text-sm font-semibold text-slate-500 dark:text-zinc-400">Cashback</p><p className="text-2xl font-black text-slate-900 dark:text-white">R$ {metrics.cashbackPendente.toFixed(2)}</p></div>
+                     <div><p className="text-sm font-semibold text-slate-500 dark:text-zinc-400">Pontos Pendentes</p><p className="text-2xl font-black text-slate-900 dark:text-white">{metrics.cashbackPendente.toFixed(0)} pts</p></div>
                  </div>
                  <div className="bg-white/40 dark:bg-[#0a0a0c]/40 backdrop-blur-2xl border border-white/60 dark:border-white/5 p-6 rounded-[2rem] shadow-sm flex items-center gap-4 hover:-translate-y-1 transition-transform">
                      <div className="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center"><Cake size={20} /></div>
@@ -158,7 +158,7 @@ export default function CustomerDirectory() {
                                          <p className="text-xs text-slate-400 dark:text-zinc-500">{c.frequency} compras</p>
                                      </td>
                                      <td className="px-6 py-4 font-bold text-slate-700 dark:text-zinc-300">R$ {c.ltv.toFixed(2)}</td>
-                                     <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">R$ {c.balance.toFixed(2)}</td>
+                                     <td className="px-6 py-4 font-bold text-emerald-600 dark:text-emerald-400">{c.balance.toFixed(0)} pts</td>
                                      <td className="px-6 py-4 text-right">
                                          <div className="flex items-center justify-end gap-2">
                                              <a href={buildWhatsAppLink(c)} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition" title="WhatsApp">

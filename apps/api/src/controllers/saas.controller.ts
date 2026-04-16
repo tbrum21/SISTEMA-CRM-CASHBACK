@@ -82,4 +82,47 @@ export class SaasController {
             return res.status(500).json({ error: e.message });
         }
     }
+
+    // Get KPIs for a specific Tenant
+    static async getTenantMetrics(req: Request, res: Response) {
+        try {
+            const { tenantId } = req.params;
+
+            const customerCount = await prisma.customerProfile.count({ where: { tenantId } });
+            
+            const earnTransactions = await prisma.transaction.aggregate({
+                where: { tenantId, type: 'EARN' },
+                _count: { id: true },
+                _sum: { amountPurchase: true, amountPoints: true }
+            });
+
+            const redeemTransactions = await prisma.transaction.aggregate({
+                where: { tenantId, type: 'REDEEM' },
+                _sum: { amountPoints: true }
+            });
+
+            const userCount = await prisma.user.count({ where: { tenantId } });
+
+            const revenue = earnTransactions._sum.amountPurchase || 0;
+            const salesCount = earnTransactions._count.id || 0;
+            const avgTicket = salesCount > 0 ? revenue / salesCount : 0;
+            const cashbackIssued = earnTransactions._sum.amountPoints || 0;
+            const cashbackRedeemed = redeemTransactions._sum.amountPoints || 0;
+
+            return res.json({
+                success: true,
+                metrics: {
+                    customerCount,
+                    userCount,
+                    revenue,
+                    salesCount,
+                    avgTicket,
+                    cashbackIssued,
+                    cashbackRedeemed
+                }
+            });
+        } catch(e: any) {
+            return res.status(500).json({ error: e.message });
+        }
+    }
 }

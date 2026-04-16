@@ -12,15 +12,25 @@ export class POSController {
   static async lookupCustomer(req: Request, res: Response) {
     try {
       const { tenantSlug } = req.params;
-      const { phone } = req.query;
-      if (!phone) return res.status(400).json({ error: 'Telefone é obrigatório.' });
+      const { query, phone } = req.query;
+      const searchTerm = String(query || phone || '');
+      if (!searchTerm) return res.status(400).json({ error: 'Termo de busca é obrigatório.' });
 
       const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
       if (!tenant) return res.status(404).json({ error: 'Tenant não encontrado.' });
 
-      const cleanPhone = formatPhone(String(phone));
-      const customer = await prisma.customer.findUnique({
-        where: { phone: cleanPhone },
+      const cleanDigits = searchTerm.replace(/\D/g, '');
+      const possiblePhone = formatPhone(cleanDigits);
+
+      const customer = await prisma.customer.findFirst({
+        where: {
+          OR: [
+            { phone: possiblePhone },
+            { phone: cleanDigits },
+            ...(cleanDigits.length >= 11 ? [{ cpf: cleanDigits }] : []),
+            { name: { contains: searchTerm, mode: 'insensitive' } }
+          ]
+        },
         include: {
           profiles: {
             where: { tenantId: tenant.id },
@@ -83,16 +93,31 @@ export class POSController {
       const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
       if (!tenant) return res.status(404).json({ error: 'Tenant não encontrado.' });
 
-      const cleanPhone = formatPhone(String(phone));
+      let cleanPhone = formatPhone(String(phone));
+      const rawDigits = String(phone).replace(/\D/g, '');
+      const cleanCpf = cpf ? cpf.replace(/\D/g, '') : null;
       const amount = Number(purchaseAmount);
+
+      // Fallback para evitar duplicação caso exista um cliente legado sem o '55' no banco
+      const existRaw = await prisma.customer.findUnique({ where: { phone: rawDigits } });
+      if (existRaw) {
+          cleanPhone = rawDigits;
+      }
+
+      if (cleanCpf) {
+          const existingCpf = await prisma.customer.findUnique({ where: { cpf: cleanCpf } });
+          if (existingCpf && existingCpf.phone !== cleanPhone) {
+              return res.status(400).json({ error: 'Este CPF já está cadastrado para outro número de telefone.' });
+          }
+      }
 
       // Upsert do customer
       const customer = await prisma.customer.upsert({
         where: { phone: cleanPhone },
-        create: { phone: cleanPhone, name: name || null, cpf: cpf || null },
+        create: { phone: cleanPhone, name: name || null, cpf: cleanCpf },
         update: {
           ...(name && { name }),
-          ...(cpf && { cpf }),
+          ...(cleanCpf && { cpf: cleanCpf }),
         }
       });
 

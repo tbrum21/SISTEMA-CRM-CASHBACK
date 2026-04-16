@@ -1,34 +1,50 @@
-# NPM Dependencies
-node_modules
-apps/web/node_modules/
-apps/api/node_modules/
-packages/database/node_modules/
+# ══════════════════════════════
+# Dependências
+# ══════════════════════════════
+node_modules/
 
-# Next.js Build
-.next
-out
-build
+# ══════════════════════════════
+# Builds e Artefatos
+# ══════════════════════════════
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
 
-# Env Security (Never commit passwords)
+# ══════════════════════════════
+# Variáveis de Ambiente (SEGURANÇA)
+# Nunca commite credenciais reais
+# ══════════════════════════════
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
 
-# Baileys WhatsApp Session Tokens (Contains private chat credentials)
+# ══════════════════════════════
+# WhatsApp / Baileys (Sessões privadas)
+# ══════════════════════════════
 baileys_auth_info/
 apps/api/baileys_auth_info/
 apps/api/sessions/
 
+# ══════════════════════════════
 # Logs
-logs
+# ══════════════════════════════
+logs/
 *.log
 npm-debug.log*
 
-# Typescript caches
-*.tsbuildinfo
-
-# OS System Files
+# ══════════════════════════════
+# Sistema Operacional
+# ══════════════════════════════
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# ══════════════════════════════
+# IDEs
+# ══════════════════════════════
+.vscode/
+.idea/
+*.swp
+*.swo

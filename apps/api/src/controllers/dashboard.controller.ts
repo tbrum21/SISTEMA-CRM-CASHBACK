@@ -27,12 +27,35 @@ export class DashboardController {
 
       const avgTicket = totalFidelizados > 0 ? (receitaFeitaComCashback / totalFidelizados) : 0;
 
-      // Fake chart mock since historical grouping takes complex SQL
-      const chartData = [
-        { name: 'Seg', cashback: 4000, normal: 2400 },
-        { name: 'Ter', cashback: 3000, normal: 1398 },
-        { name: 'Qua', cashback: receitaFeitaComCashback > 0 ? receitaFeitaComCashback : 8000, normal: 9800 },
-      ];
+      // Build daily data for the last 7 days
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      sevenDaysAgo.setHours(0,0,0,0);
+
+      const recentStats = await prisma.transaction.findMany({
+        where: { tenantId: tenant.id, type: 'EARN', createdAt: { gte: sevenDaysAgo } }
+      });
+
+      const dailyData = Array.from({ length: 7 }).map((_, i) => {
+          const d = new Date(sevenDaysAgo);
+          d.setDate(d.getDate() + i);
+          return {
+              dateStr: d.toISOString().split('T')[0],
+              // "seg.", "ter." format removal
+              name: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''),
+              cashback: 0
+          };
+      });
+
+      recentStats.forEach(tx => {
+          const txDate = tx.createdAt.toISOString().split('T')[0];
+          const dayMatch = dailyData.find(d => d.dateStr === txDate);
+          if (dayMatch) {
+              dayMatch.cashback += (tx.amountPurchase || 0);
+          }
+      });
+
+      const chartData = dailyData.map(d => ({ name: d.name.charAt(0).toUpperCase() + d.name.slice(1), cashback: d.cashback }));
 
       const recentTransactions = await prisma.transaction.findMany({
           where: { tenantId: tenant.id, type: 'EARN' },

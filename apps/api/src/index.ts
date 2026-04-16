@@ -12,6 +12,7 @@ import { CustomerController } from './controllers/customer.controller';
 import { AuthController } from './controllers/auth.controller';
 import { UserController } from './controllers/user.controller';
 import { SaasController } from './controllers/saas.controller';
+import { ConsumerController } from './controllers/consumer.controller';
 import { authMiddleware, requireSuperAdmin, requireTenantOwner } from './middlewares/auth.middleware';
 import { CRMWorkers } from './workers/cron.worker';
 import { prisma } from '@repo/database';
@@ -46,9 +47,19 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
 // Auth
 app.post('/api/auth/login', AuthController.login);
 
-// Módulo SaaS (Super Admin)
-app.post('/api/saas/companies', authMiddleware, requireSuperAdmin, SaasController.createTenant);
-app.get('/api/saas/companies', authMiddleware, requireSuperAdmin, SaasController.listTenants);
+// ===== SAAS ADMIN ROUTES =====
+app.get('/api/saas/companies', SaasController.listTenants);
+app.post('/api/saas/companies', SaasController.createTenant);
+app.get('/api/saas/companies/:tenantId/metrics', SaasController.getTenantMetrics);
+
+// ===== CONSUMER PWA ROUTES =====
+app.post('/api/consumer/auth', ConsumerController.auth);
+app.get('/api/consumer/wallet/:tenantSlug/:customerId', ConsumerController.getWallet);
+app.post('/api/consumer/redeem', ConsumerController.requestRedeem);
+
+// ===== ADMIN / QUEUE ROUTES =====
+app.get('/api/consumer/admin/queue/:tenantSlug', ConsumerController.getRedeemQueue);
+app.post('/api/consumer/admin/fulfill/:transactionId', ConsumerController.fulfillRedeem);
 
 // Módulo Tenant (Loja Configurações & Equipe)
 app.get('/api/users', authMiddleware, requireTenantOwner, UserController.listUsers);
