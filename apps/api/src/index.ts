@@ -18,7 +18,24 @@ import { CRMWorkers } from './workers/cron.worker';
 import { prisma } from '@repo/database';
 
 const app = express();
-app.use(cors());
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',')
+  : [
+      'https://sistema-crm-cashback.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:3001'
+    ];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permite requests sem origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Origin ${origin} bloqueada pelo CORS`));
+  },
+  credentials: true
+}));
 app.use(express.json());
 
 // ==========================================
