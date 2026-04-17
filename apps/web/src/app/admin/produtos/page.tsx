@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import { Save, Plus, Trash2, Pencil, X, Package, Check, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { API_URL } from '@/lib/api';
 
-const API = 'http://localhost:3333/api/settings/burger-master';
+const API = `${API_URL}/api/settings/burger-master`;
 
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<any[]>([]);

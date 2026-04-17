@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Save, Plus, Trash2, Pencil, X, Package, Award, MessageSquare, Clock, Check } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
-const API = 'http://localhost:3333/api/settings/burger-master';
+const API = `${API_URL}/api/settings/burger-master`;
 
 export default function SettingsPage() {
   const [tenant, setTenant] = useState<any>(null);

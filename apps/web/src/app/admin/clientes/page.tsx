@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Users, AlertTriangle, Wallet, Cake, MessageCircle, FileText, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { API_URL } from '@/lib/api';
 
 export default function CustomerDirectory() {
     const [customers, setCustomers] = useState([]);
@@ -23,7 +24,7 @@ export default function CustomerDirectory() {
              if (segment) qs.append('segment', segment);
              
              try {
-                const res = await fetch(`http://localhost:3333/api/customers/burger-master?${qs.toString()}`);
+                const res = await fetch(`${API_URL}/api/customers/burger-master?${qs.toString()}`);
                 const data = await res.json();
                 if (data.customers) setCustomers(data.customers);
                 if (data.metrics) setMetrics(data.metrics);

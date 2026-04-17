@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Users2, Shield, Plus, X, Trash2, Mail, Edit2 } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
 export default function UsersManagement() {
     const [users, setUsers] = useState<any[]>([]);
@@ -11,7 +12,7 @@ export default function UsersManagement() {
     const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('@elobonus:token');
-            const res = await fetch('http://localhost:3333/api/users', {
+            const res = await fetch(`${API_URL}/api/users`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -31,7 +32,7 @@ export default function UsersManagement() {
         e.preventDefault();
         try {
             const token = localStorage.getItem('@elobonus:token');
-            const res = await fetch('http://localhost:3333/api/users', {
+            const res = await fetch(`${API_URL}/api/users`, {
                 method: 'POST',
                 headers: { 
                     'Authorization': `Bearer ${token}`,

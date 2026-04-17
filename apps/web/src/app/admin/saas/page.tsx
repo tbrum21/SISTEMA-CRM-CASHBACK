@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Building2, ShieldCheck, Plus, Store, Users, FileText, X, TrendingUp, DollarSign, Activity, Users2, ShoppingCart, Award } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/api';
 
 export default function SaasDashboard() {
   const [formData, setFormData] = useState({ companyName: '', companySlug: '', ownerName: '', ownerEmail: '', ownerPassword: '' });
@@ -35,7 +36,7 @@ export default function SaasDashboard() {
   const fetchTenants = async () => {
     try {
       const token = localStorage.getItem('@elobonus:token');
-      const res = await fetch('http://localhost:3333/api/saas/companies', {
+      const res = await fetch(`${API_URL}/api/saas/companies`, {
           headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -53,7 +54,7 @@ export default function SaasDashboard() {
       setTenantMetrics(null);
       try {
           const token = localStorage.getItem('@elobonus:token');
-          const res = await fetch(`http://localhost:3333/api/saas/companies/${tenant.id}/metrics`, {
+          const res = await fetch(`${API_URL}/api/saas/companies/${tenant.id}/metrics`, {
               headers: { 'Authorization': `Bearer ${token}` }
           });
           if (res.ok) {
@@ -74,7 +75,7 @@ export default function SaasDashboard() {
       setSuccess('');
       try {
           const token = localStorage.getItem('@elobonus:token');
-          const res = await fetch('http://localhost:3333/api/saas/companies', {
+          const res = await fetch(`${API_URL}/api/saas/companies`, {
               method: 'POST',
               headers: { 
                   'Authorization': `Bearer ${token}`,

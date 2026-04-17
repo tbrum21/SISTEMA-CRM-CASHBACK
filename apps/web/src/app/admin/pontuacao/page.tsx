@@ -1,8 +1,9 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { Search, DollarSign, Award, AlertTriangle, CheckCircle2, ArrowLeft, User, Phone, CreditCard, Sparkles } from 'lucide-react';
+import { API_URL } from '@/lib/api';
 
-const API = 'http://localhost:3333/api/pos/burger-master';
+const API = `${API_URL}/api/pos/burger-master`;
 
 type Step = 'IDENTIFY' | 'AMOUNT' | 'RESULT';
 

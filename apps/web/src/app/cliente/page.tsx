@@ -2,8 +2,9 @@
 import { useState, useEffect } from 'react';
 import { Wallet, Star, ArrowUpRight, Phone, ArrowRight, User } from 'lucide-react';
 import Link from 'next/link';
+import { API_URL } from '@/lib/api';
 
-const API = 'http://localhost:3333/api/consumer';
+const API = `${API_URL}/api/consumer`;
 
 export default function ClienteCentralPage() {
   const [session, setSession] = useState<any>(null);

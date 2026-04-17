@@ -3,8 +3,9 @@ import { useState, useEffect, Suspense } from 'react';
 import { ArrowLeft, Package, Sparkles, CheckCircle2, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { API_URL } from '@/lib/api';
 
-const API = 'http://localhost:3333/api/consumer';
+const API = `${API_URL}/api/consumer`;
 
 function LojaContent({ slug }: { slug: string }) {
   const searchParams = useSearchParams();

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, User, Phone, Mail, Award, Target, Hash, MessageCircle, BarChart3, ShoppingBag, Gift, Clock, Save, Trash2, CalendarDays, Edit2, X, AlertTriangle } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useRouter } from 'next/navigation';
+import { API_URL } from '@/lib/api';
 
 export default function CustomerProfile({ params }: { params: { id: string } }) {
   const [profile, setProfile] = useState<any>(null);
@@ -17,7 +18,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`http://localhost:3333/api/customers/burger-master/${params.id}`);
+      const res = await fetch(`${API_URL}/api/customers/burger-master/${params.id}`);
       if (!res.ok) return;
       const data = await res.json();
       setProfile(data.profile);
@@ -45,7 +46,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
   const handleAddNote = async () => {
     if (!noteContent.trim()) return;
     try {
-      await fetch(`http://localhost:3333/api/customers/burger-master/${params.id}/notes`, {
+      await fetch(`${API_URL}/api/customers/burger-master/${params.id}/notes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: noteContent, authorName: 'Admin do Sistema' })
@@ -59,7 +60,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
 
   const handleDeleteNote = async (noteId: string) => {
     try {
-      await fetch(`http://localhost:3333/api/customers/burger-master/notes/${noteId}`, { method: 'DELETE' });
+      await fetch(`${API_URL}/api/customers/burger-master/notes/${noteId}`, { method: 'DELETE' });
       fetchProfile();
     } catch (e) {
       console.error(e);
@@ -68,7 +69,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
 
   const handleUpdateCustomer = async () => {
       try {
-          await fetch(`http://localhost:3333/api/customers/burger-master/${params.id}`, {
+          await fetch(`${API_URL}/api/customers/burger-master/${params.id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(editData)
@@ -82,7 +83,7 @@ export default function CustomerProfile({ params }: { params: { id: string } }) 
 
   const handleDeleteCustomer = async () => {
       try {
-          await fetch(`http://localhost:3333/api/customers/burger-master/${params.id}`, { method: 'DELETE' });
+          await fetch(`${API_URL}/api/customers/burger-master/${params.id}`, { method: 'DELETE' });
           router.push('/admin/clientes');
       } catch (e) {
           console.error(e);

@@ -2,10 +2,11 @@
 import { useState, useEffect } from 'react';
 import { PackageOpen, Clock, CheckCircle2, User, Phone, ArrowLeft, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { API_URL } from '@/lib/api';
 
 const formatPhone = (v: string) => { const d = v.replace(/\D/g, '').slice(-11); if (d.length === 11) return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`; return v; };
 
-const API = 'http://localhost:3333/api';
+const API = `${API_URL}/api`;
 
 export default function AdminQueuePage() {
   const [queue, setQueue] = useState<any[]>([]);

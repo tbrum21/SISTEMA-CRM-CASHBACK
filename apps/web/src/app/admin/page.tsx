@@ -2,6 +2,7 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, Users, Wallet, Zap, ArrowUpRight, Settings, Award, RefreshCw, Package, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { API_URL } from '@/lib/api';
 
 export default function AdminDashboard() {
   const [kpis, setKpis] = useState({ receitaBase: 0, fidelizados: 0, ticketMedio: 0 });
@@ -12,7 +13,7 @@ export default function AdminDashboard() {
   
   const fetchData = () => {
     setLoading(true);
-    fetch('http://localhost:3333/api/dashboard/burger-master')
+    fetch(`${API_URL}/api/dashboard/burger-master`)
       .then(res => res.json())
       .then(res => {
          if (res.kpis) setKpis(res.kpis);
