@@ -80,11 +80,11 @@ app.delete('/api/customers/:tenantSlug/notes/:noteId', CustomerController.delete
 app.post('/api/customers/:tenantSlug/message-segment', CustomerController.sendSegmentMessage);
 
 
-// Inicializa Backgroun Tasks de Engajamento
+// Inicializa Background Tasks e Servidor
 async function bootstrap() {
-    // NOTA: Baileys e Workers rodariam isolados no PM2 (Produção)
-    // Para simplificar a visualização do NEXT.js no seu ambiente de Dev,
-    // o QR Code do WhatsApp foi suprimido do Auto-Restart do Nodemon.
+    // TODO: Descomentar quando integrar com API oficial do WhatsApp
+    // const workers = new CRMWorkers(prisma);
+    // workers.start();
     
     app.listen(3333, () => {
         console.log('🚀 Backend API-Driven (Node) operando na porta 3333!');
@@ -92,3 +92,4 @@ async function bootstrap() {
 }
 
 bootstrap();
+

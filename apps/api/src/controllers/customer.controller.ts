@@ -1,11 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '@repo/database';
-import { MessagingService } from '../services/messaging.service';
-import { WhatsAppService, waService } from '../whatsapp/baileys.service';
 import { formatPhone } from '../utils/phone.util';
-
-waService.initEngine().catch(console.error);
-const messagingService = new MessagingService(prisma, waService);
 
 export class CustomerController {
   
@@ -127,8 +122,27 @@ export class CustomerController {
           const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
           if (!tenant) return res.status(404).json({ error: 'Tenant não encontrado' });
 
-          const result = await messagingService.sendToSegment(tenant.id, segment, template);
-          return res.json(result);
+          // TODO: Implementar disparo em massa quando integrar com API oficial do WhatsApp
+          // Por enquanto, retorna os clientes do segmento para disparo manual via wa.me
+          const profiles = await prisma.customerProfile.findMany({
+              where: { tenantId: tenant.id, rfmSegment: segment },
+              include: { customer: true }
+          });
+
+          const contacts = profiles.map(p => ({
+              name: p.customer.name || 'Cliente',
+              phone: p.customer.phone,
+              message: template
+                  .replace('{name}', p.customer.name || 'amigo(a)')
+                  .replace('{balance}', p.balance.toFixed(2)),
+              waLink: `https://wa.me/${p.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                  template
+                      .replace('{name}', p.customer.name || 'amigo(a)')
+                      .replace('{balance}', p.balance.toFixed(2))
+              )}`
+          }));
+
+          return res.json({ total: contacts.length, contacts });
       } catch (e: any) {
           return res.status(500).json({ error: e.message });
       }
