@@ -1,6 +1,5 @@
 import { Request, Response } from 'express';
 import { prisma } from '@repo/database';
-import { CustomerProfileService } from '../services/customer-profile.service';
 import { formatPhone } from '../utils/phone.util';
 
 export class POSController {
