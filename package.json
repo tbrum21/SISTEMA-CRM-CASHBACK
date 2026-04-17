@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "npm run generate --workspace=@repo/database"
+    "postinstall": "npm run generate --workspace=@repo/database && npm run build --workspace=@repo/database"
   },
   "devDependencies": {
     "prisma": "5.22.0"

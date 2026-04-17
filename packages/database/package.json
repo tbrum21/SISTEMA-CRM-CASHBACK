@@ -1,10 +1,11 @@
 {
   "name": "@repo/database",
   "version": "1.0.0",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "generate": "npx prisma@5.22.0 generate"
+    "generate": "npx prisma@5.22.0 generate",
+    "build": "tsc"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0"
