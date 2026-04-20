@@ -22,7 +22,8 @@ const app = express();
 const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',')
   : [
-      'https://sistema-crm-cashback.vercel.app',
+      'https://sistema-crm-cashback-web.vercel.app',
+      'https://cashback.cyrustech.com.br',
       'http://localhost:3000',
       'http://localhost:3001'
     ];
