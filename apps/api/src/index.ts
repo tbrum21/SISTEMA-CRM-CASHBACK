@@ -19,24 +19,28 @@ import { prisma } from '@repo/database';
 
 const app = express();
 
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',')
-  : [
-      'https://sistema-crm-cashback-web.vercel.app',
-      'https://cashback.cyrustech.com.br',
-      'http://localhost:3000',
-      'http://localhost:3001'
-    ];
+const allowedOrigins = [
+  'https://cashback.cyrustech.com.br',
+  'https://sistema-crm-cashback-web.vercel.app',
+  'http://localhost:3000'
+];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Permite requests sem origin (mobile apps, curl, Postman)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error(`Origin ${origin} bloqueada pelo CORS`));
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Bloqueado pelo CORS'));
+    }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
+
+// Handler explícito para resolver o Preflight do navegador
+app.options('*', cors());
+
 app.use(express.json());
 
 // ==========================================
